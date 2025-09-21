@@ -2,7 +2,7 @@
   "Paracetamol": {
     "Aspirin": {
       "type": "Pharmacodynamic",
-      "severity": "Severe",
+      "severity": "Moderate",
       "description": "Potential interaction between Paracetamol and Aspirin."
     },
     "Warfarin": {
