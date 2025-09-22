@@ -98,38 +98,38 @@
   "Warfarin": {
     "Amoxicillin": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Warfarin and Amoxicillin."
+      "severity": "monitor closely",
+      "description": "Potential interaction between Warfarin and Amoxicillin. Use Caution/Monitor. Amoxicillin increases effects of warfarin by Other (see comment). Comment: Amoxicillin may enhance anticoagulant effect of vitamin K antagonists."
     },
     "Ibuprofen": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Warfarin and Ibuprofen."
+      "severity": "monitor closely",
+      "description": "Either increases effects of the other by pharmacodynamic synergism. Modify Therapy/Monitor Closely. Drugs with antiplatelet properties may increase anticoagulation effect of warfarin."
     },
     "Metformin": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Warfarin and Metformin."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Warfarin and Metformin."
     },
     "Lisinopril": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Warfarin and Lisinopril."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Warfarin and Lisinopril."
     },
     "Amlodipine": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Warfarin and Amlodipine."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Warfarin and Amlodipine."
     },
     "Ciprofloxacin": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Warfarin and Ciprofloxacin."
+      "severity": "monitor closely",
+      "description": "Ciprofloxacin increases effects of Warfarin by unspecified interaction mechanism. Use Caution/Monitor."
     },
     "Omeprazole": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Warfarin and Omeprazole."
+      "severity": "monitor closely",
+      "description": "omeprazole will increase the level or effect of warfarin by Other (see comment). Use Caution/Monitor. Warfarin's less potent R-enantiomer is metabolized in part by CYP3A4 (and also CYP1A2 and CYP2C19). Monitor INR more frequently if coadministered with inhibitors of these isoenzymes and adjust warfarin dose if needed."
     }
   },
   "Amoxicillin": {
