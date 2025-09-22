@@ -16,7 +16,7 @@ with open("filtered_ddi.json", "r") as f:
 
 # ------------------ SIDEBAR NAVIGATION ------------------
 st.sidebar.title("Navigation")
-app_mode = st.sidebar.radio("Go to", ["Home", "Calculator", "Drug Assistant", "Indian Protocols"])
+app_mode = st.sidebar.radio("Go to", ["Home", "Calculator", "Drug Assistant", "Normal Values", "Indian Protocols"])
 
 # ------------------ HOME PAGE ------------------
 if app_mode == "Home":
@@ -31,6 +31,7 @@ if app_mode == "Home":
     ---
     🔬 *All tools are built for educational and professional support only.*
     """)
+
 
 # ------------------ CALCULATORS ------------------
 elif app_mode == "Calculator":
@@ -591,6 +592,72 @@ elif app_mode == "Drug Assistant":
                 found = True
         if not found:
             st.success("✅ No major interactions found.")
+
+# -------------------------
+# Normal Values Page
+# -------------------------
+elif app_mode == "Normal Values":
+    st.title("📊 Normal Values")
+
+    # Normal values grouped by system
+    normal_values = {
+        "Cardiovascular": {
+            "Blood Pressure": "Systolic 90–120 mmHg, Diastolic 60–80 mmHg",
+            "Pulse Rate": "60 – 100 bpm",
+            "Mean Arterial Pressure": "70 – 100 mmHg",
+        },
+        "Respiratory": {
+            "Respiratory Rate": "12 – 20 breaths/min",
+            "Oxygen Saturation (SpO₂)": "95 – 100%",
+            "PaO₂": "80 – 100 mmHg",
+            "PaCO₂": "35 – 45 mmHg",
+        },
+        "Renal / Electrolytes": {
+            "Sodium (Na⁺)": "135 – 145 mmol/L",
+            "Potassium (K⁺)": "3.5 – 5.0 mmol/L",
+            "Creatinine": "0.7 – 1.3 mg/dL (men), 0.6 – 1.1 mg/dL (women)",
+            "Urea": "15 – 40 mg/dL",
+        },
+        "Hematology": {
+            "Hemoglobin (Hb)": "13.5 – 17.5 g/dL (men), 12.0 – 15.5 g/dL (women)",
+            "WBC Count": "4,000 – 11,000 /µL",
+            "Platelet Count": "150,000 – 450,000 /µL",
+            "Hematocrit (Hct)": "41 – 53% (men), 36 – 46% (women)",
+        },
+        "Metabolic / Endocrine": {
+            "Random Blood Sugar": "< 140 mg/dL",
+            "Fasting Blood Sugar": "70 – 99 mg/dL",
+            "Postprandial Blood Sugar": "< 140 mg/dL",
+            "HbA1c": "< 5.7% (normal)",
+        },
+        "General": {
+            "Body Temperature": "36.5 – 37.5 °C",
+            "BMI": "18.5 – 24.9 kg/m²",
+        }
+    }
+
+    # Search box
+    search_query = st.text_input("🔍 Search Normal Value")
+
+    if search_query:
+        results = []
+        for system, params in normal_values.items():
+            for param, value in params.items():
+                if search_query.lower() in param.lower():
+                    results.append((system, param, value))
+        if results:
+            for system, param, value in results:
+                st.subheader(f"{param} ({system})")
+                st.success(f"Normal Range: {value}")
+        else:
+            st.warning("No matching parameter found.")
+    else:
+        # If no search, filter by system → parameter
+        system = st.selectbox("Select Body System", list(normal_values.keys()))
+        param = st.selectbox("Select Parameter", list(normal_values[system].keys()))
+        st.subheader(f"{param} ({system})")
+        st.info(f"Normal Range: {normal_values[system][param]}")
+
 
 # ------------------ INDIAN PROTOCOLS ------------------
 elif app_mode == "Indian Protocols":
