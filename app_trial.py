@@ -20,7 +20,7 @@ app_mode = st.sidebar.radio("Go to", ["Home", "Calculator", "Drug Assistant", "I
 
 # ------------------ HOME PAGE ------------------
 if app_mode == "Home":
-    st.title("🏥 Welcome to the Advanced Medical App")
+    st.title("🏥 Welcome to the Medical Suite")
     st.markdown("""
     This app is designed for doctors, medical students, and healthcare professionals.  
     Use the sidebar to navigate to:
@@ -51,12 +51,28 @@ elif app_mode == "Calculator":
 }
 
     # Sidebar selection
-    category = st.sidebar.selectbox("Category", ["All"] + list(calculators_by_category.keys()))
-    if category == "All":
+    # --- Sidebar search bar ---
+    search_query = st.sidebar.text_input("🔍 Search Calculator", "")
+
+    if search_query:
+        # Flatten all calculators into a single list
         all_calcs = [calc for sublist in calculators_by_category.values() for calc in sublist]
-        selected_calculator = st.sidebar.selectbox("Select Calculator", all_calcs)
+        matching_calcs = [calc for calc in all_calcs if search_query.lower() in calc.lower()]
+
+        if matching_calcs:
+            selected_calculator = st.sidebar.selectbox("Matching Calculators", matching_calcs)
+        else:
+            st.sidebar.info("No matching calculators found.")
+            selected_calculator = None
     else:
-        selected_calculator = st.sidebar.selectbox("Select Calculator", calculators_by_category[category])
+        # Normal navigation if no search
+        category = st.sidebar.selectbox("Category", ["All"] + list(calculators_by_category.keys()))
+        if category == "All":
+            all_calcs = [calc for sublist in calculators_by_category.values() for calc in sublist]
+            selected_calculator = st.sidebar.selectbox("Select Calculator", all_calcs)
+        else:
+            selected_calculator = st.sidebar.selectbox("Select Calculator", calculators_by_category[category])
+
 
     # ------------------ CALCULATOR LOGIC ------------------
     # ---------- GENERAL ----------
