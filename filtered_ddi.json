@@ -37,20 +37,20 @@
     },
     "Ciprofloxacin": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Paracetamol and Ciprofloxacin."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Paracetamol and Ciprofloxacin."
     },
     "Omeprazole": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Paracetamol and Omeprazole."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Paracetamol and Omeprazole."
     }
   },
   "Aspirin": {
     "Warfarin": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Aspirin and Warfarin."
+      "severity": "monitor closely",
+      "description": "Aspirin increases effects of warfarin by anticoagulation. Modify Therapy/Monitor Closely. Avoid coadministration of chronic high-dose aspirin. Aspirin's antiplatelet properties may increase anticoagulation effect of warfarin."
     },
     "Amoxicillin": {
       "type": "Pharmacodynamic",
@@ -86,6 +86,13 @@
       "type": "Pharmacodynamic",
       "severity": "Moderate",
       "description": "Potential interaction between Aspirin and Omeprazole."
+    }
+  },
+  "Sildenafil": {
+    "Nitroglycerin": {
+      "type": "Pharmacodynamic",
+      "severity": "contraindicated",
+      "description": "Additive vasodilation. Potentially fatal hypotension."
     }
   },
   "Warfarin": {
