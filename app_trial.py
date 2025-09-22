@@ -620,6 +620,7 @@ elif app_mode == "Drug Assistant":
     st.title("💊 Drug Assistant")
     st.subheader("Drug Interaction Checker")
 
+    # Initialize session state
     if "selected_drugs" not in st.session_state:
         st.session_state.selected_drugs = []
 
@@ -635,6 +636,10 @@ elif app_mode == "Drug Assistant":
                     st.session_state.selected_drugs.append(selected_drug)
         else:
             st.info("No matching drugs found.")
+
+    # ---------------- Clear button ----------------
+    if st.button("🧹 Clear All Drugs"):
+        st.session_state.selected_drugs = []
 
     # ---------------- Show selected ----------------
     if st.session_state.selected_drugs:
@@ -666,9 +671,8 @@ elif app_mode == "Drug Assistant":
 
         if not found:
             st.success("✅ No major interactions found.")
-
-
-
+        
+#filtered_ddi.json is being used.
 
 # no interaction -> green colour 
 # monitor closely -> orange colour
