@@ -595,45 +595,80 @@ elif app_mode == "Calculator":
 #         if not found:
 #             st.success("✅ No major interactions found.")
 
-
 elif app_mode == "Drug Assistant":
+    # -----------------------------
+    # Load JSON
+    # -----------------------------
+    with open("filtered_ddi.json", "r") as f:
+        ddi_data = json.load(f)
+
+    # Build list of all drugs
+    nlem_drugs = list(ddi_data.keys())
+    for interactions in ddi_data.values():
+        for drug in interactions.keys():
+            if drug not in nlem_drugs:
+                nlem_drugs.append(drug)
+    nlem_drugs = sorted(nlem_drugs)
+
+    # Helper to get interaction
+    def get_interaction(d1, d2):
+        return ddi_data.get(d1, {}).get(d2) or ddi_data.get(d2, {}).get(d1)
+
+    # -----------------------------
+    # Streamlit App
+    # -----------------------------
     st.title("💊 Drug Assistant")
     st.subheader("Drug Interaction Checker")
 
-    # Autocomplete input using streamlit-tags
-    selected_drugs = st_tags(
-        label="Type and select patient drugs:",
-        text="Start typing drug name...",
-        value=[],
-        suggestions=nlem_drugs,
-        maxtags=10,
-        key="drug_selector"
-    )
+    if "selected_drugs" not in st.session_state:
+        st.session_state.selected_drugs = []
 
-    # Check interactions if at least 2 drugs selected
-    if len(selected_drugs) > 1:
-        st.subheader("Interactions Found:")
+    # ---------------- Search like calculator ----------------
+    search_query = st.text_input("🔍 Search Drug", "")
+
+    if search_query:
+        matching_drugs = [drug for drug in nlem_drugs if search_query.lower() in drug.lower()]
+        if matching_drugs:
+            selected_drug = st.selectbox("Matching Drugs", matching_drugs, key="drug_select")
+            if st.button("➕ Add Drug"):
+                if selected_drug not in st.session_state.selected_drugs:
+                    st.session_state.selected_drugs.append(selected_drug)
+        else:
+            st.info("No matching drugs found.")
+
+    # ---------------- Show selected ----------------
+    if st.session_state.selected_drugs:
+        st.subheader("Selected Drugs")
+        st.write(", ".join(st.session_state.selected_drugs))
+
+    # ---------------- Check interactions ----------------
+    if len(st.session_state.selected_drugs) > 1:
+        st.subheader("Interactions Found")
         found = False
-        for d1, d2 in combinations(selected_drugs, 2):
-            # Look for interaction in either direction
-            interaction = ddi_data.get(d1, {}).get(d2) or ddi_data.get(d2, {}).get(d1)
+        for d1, d2 in combinations(st.session_state.selected_drugs, 2):
+            interaction = get_interaction(d1, d2)
             if interaction:
                 severity = interaction["severity"].lower()
                 desc = interaction["description"]
 
-                # Color-coded boxes based on severity
                 if severity == "no interaction":
-                    st.success(f"✅ {d1} + {d2} → {severity.capitalize()}: {desc}")
+                    st.success(f"✅ {d1} + {d2} → No Interaction: {desc}")
                 elif severity == "monitor closely":
-                    st.warning(f"🟠 {d1} + {d2} → {severity.capitalize()}: {desc}")
+                    st.warning(f"🟠 {d1} + {d2} → Monitor Closely: {desc}")
                 elif severity in ["serious - use alternative", "contraindicated"]:
-                    st.error(f"❌ {d1} + {d2} → {severity.capitalize()}: {desc}")
+                    st.error(f"❌ {d1} + {d2} → Serious / Contraindicated: {desc}")
                 else:
                     st.info(f"{d1} + {d2} → {severity.capitalize()}: {desc}")
 
                 found = True
+            else:
+                st.info(f"ℹ️ {d1} + {d2} → No interaction data available.")
+
         if not found:
             st.success("✅ No major interactions found.")
+
+
+
 
 # no interaction -> green colour 
 # monitor closely -> orange colour
