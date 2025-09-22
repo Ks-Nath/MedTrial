@@ -2,38 +2,38 @@
   "Paracetamol": {
     "Aspirin": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Paracetamol and Aspirin."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Paracetamol and Aspirin."
     },
     "Warfarin": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Paracetamol and Warfarin."
+      "severity": "monitor closely",
+      "description": "Acetaminophen increases effects of warfarin by anticoagulation. Use caution/monitor."
     },
     "Amoxicillin": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Paracetamol and Amoxicillin."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Paracetamol and Amoxicillin."
     },
     "Ibuprofen": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Paracetamol and Ibuprofen."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Paracetamol and Ibuprofen."
     },
     "Metformin": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Paracetamol and Metformin."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Paracetamol and Metformin."
     },
     "Lisinopril": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Paracetamol and Lisinopril."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Paracetamol and Lisinopril."
     },
     "Amlodipine": {
       "type": "Pharmacodynamic",
-      "severity": "Moderate",
-      "description": "Potential interaction between Paracetamol and Amlodipine."
+      "severity": "no interaction",
+      "description": "NO Potential interaction between Paracetamol and Amlodipine."
     },
     "Ciprofloxacin": {
       "type": "Pharmacodynamic",

@@ -2,6 +2,8 @@ import streamlit as st
 import json
 from itertools import combinations
 import math
+from streamlit_tags import st_tags
+ 
 # ------------------ APP CONFIG ------------------
 st.set_page_config(page_title="Advanced Medical App", layout="wide")
 
@@ -567,31 +569,77 @@ elif app_mode == "Calculator":
 
 
 # ------------------ DRUG ASSISTANT ------------------
+# elif app_mode == "Drug Assistant":
+#     st.title("💊 Drug Assistant")
+#     st.subheader("Drug Interaction Checker")
+
+#     selected_drugs = st.multiselect("Select patient drugs:", nlem_drugs)
+
+#     if len(selected_drugs) > 1:
+#         st.subheader("Interactions Found:")
+#         found = False
+#         for d1, d2 in combinations(selected_drugs, 2):
+#             interaction = ddi_data.get(d1, {}).get(d2) or ddi_data.get(d2, {}).get(d1)
+#             if interaction:
+#                 severity = interaction["severity"]
+#                 desc = interaction["description"]
+
+#                 if severity.lower() == "high":
+#                     st.error(f"⚠️ {d1} + {d2} → {severity}: {desc}")
+#                 elif severity.lower() == "moderate":
+#                     st.warning(f"⚠️ {d1} + {d2} → {severity}: {desc}")
+#                 else:
+#                     st.info(f"{d1} + {d2} → {severity}: {desc}")
+
+#                 found = True
+#         if not found:
+#             st.success("✅ No major interactions found.")
+
+
 elif app_mode == "Drug Assistant":
     st.title("💊 Drug Assistant")
     st.subheader("Drug Interaction Checker")
 
-    selected_drugs = st.multiselect("Select patient drugs:", nlem_drugs)
+    # Autocomplete input using streamlit-tags
+    selected_drugs = st_tags(
+        label="Type and select patient drugs:",
+        text="Start typing drug name...",
+        value=[],
+        suggestions=nlem_drugs,
+        maxtags=10,
+        key="drug_selector"
+    )
 
+    # Check interactions if at least 2 drugs selected
     if len(selected_drugs) > 1:
         st.subheader("Interactions Found:")
         found = False
         for d1, d2 in combinations(selected_drugs, 2):
+            # Look for interaction in either direction
             interaction = ddi_data.get(d1, {}).get(d2) or ddi_data.get(d2, {}).get(d1)
             if interaction:
-                severity = interaction["severity"]
+                severity = interaction["severity"].lower()
                 desc = interaction["description"]
 
-                if severity.lower() == "high":
-                    st.error(f"⚠️ {d1} + {d2} → {severity}: {desc}")
-                elif severity.lower() == "moderate":
-                    st.warning(f"⚠️ {d1} + {d2} → {severity}: {desc}")
+                # Color-coded boxes based on severity
+                if severity == "no interaction":
+                    st.success(f"✅ {d1} + {d2} → {severity.capitalize()}: {desc}")
+                elif severity == "monitor closely":
+                    st.warning(f"🟠 {d1} + {d2} → {severity.capitalize()}: {desc}")
+                elif severity in ["serious - use alternative", "contraindicated"]:
+                    st.error(f"❌ {d1} + {d2} → {severity.capitalize()}: {desc}")
                 else:
-                    st.info(f"{d1} + {d2} → {severity}: {desc}")
+                    st.info(f"{d1} + {d2} → {severity.capitalize()}: {desc}")
 
                 found = True
         if not found:
             st.success("✅ No major interactions found.")
+
+# no interaction -> green colour 
+# monitor closely -> orange colour
+# serious-use alternative -> red colour 
+# contraindicated -> red colour
+# use these categories with same spelling and all in json too.
 
 # -------------------------
 # Normal Values Page
