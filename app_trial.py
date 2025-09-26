@@ -7,6 +7,25 @@ from streamlit_tags import st_tags
 # ------------------ APP CONFIG ------------------
 st.set_page_config(page_title="Advanced Medical App", layout="wide")
 
+# Complete CSS to hide About and Streamlit footer
+custom_css = """
+    <style>
+    /* Hide "About" in hamburger menu */
+    [data-testid="stMainMenu"] li:nth-child(3) {display: none;}
+
+    /* Keep Settings and Report a bug visible */
+    
+    /* Hide Streamlit footer ("Made with Streamlit") */
+    footer {visibility: hidden;}
+    
+    /* Remove extra space below app caused by footer */
+    footer + div {height: 0px;}
+    </style>
+"""
+
+st.markdown(custom_css, unsafe_allow_html=True)
+
+
 # ------------------ LOAD DATA ------------------
 # Load NLEM 2022 drugs
 with open("nlem_2022.json", "r") as f:
