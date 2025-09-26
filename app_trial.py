@@ -5,25 +5,21 @@ import math
 from streamlit_tags import st_tags
  
 # ------------------ APP CONFIG ------------------
-st.set_page_config(page_title="Advanced Medical App", layout="wide")
+st.set_page_config(page_title="Advanced Medical App", layout="wide", menu_items={
+        'About': "Made by Nath"  # This replaces the default About text
+    })
 
-# Complete CSS to hide About and Streamlit footer
-custom_css = """
-    <style>
-    /* Hide "About" in hamburger menu */
-    [data-testid="stMainMenu"] li:nth-child(3) {display: none;}
+# ------------------- Hide Streamlit Branding -------------------
+# Hide "Made with Streamlit" in About
 
-    /* Keep Settings and Report a bug visible */
-    
-    /* Hide Streamlit footer ("Made with Streamlit") */
-    footer {visibility: hidden;}
-    
-    /* Remove extra space below app caused by footer */
-    footer + div {height: 0px;}
-    </style>
+# ---- Make About popup dark ----
+# Hide About completely
+hide_about = """
+<style>
+#MainMenu div:nth-child(3) {display: none;}
+</style>
 """
-
-st.markdown(custom_css, unsafe_allow_html=True)
+st.markdown(hide_about, unsafe_allow_html=True)
 
 
 # ------------------ LOAD DATA ------------------
