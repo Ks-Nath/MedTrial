@@ -2,7 +2,6 @@ import streamlit as st
 import json
 from itertools import combinations
 import math
-from streamlit_tags import st_tags
  
 # ------------------ APP CONFIG ------------------
 st.set_page_config(page_title="Advanced Medical App", layout="wide", menu_items={
