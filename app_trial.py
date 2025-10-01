@@ -2,24 +2,19 @@ import streamlit as st
 import json
 from itertools import combinations
 import math
- 
+from datetime import date, timedelta
+
 # ------------------ APP CONFIG ------------------
-st.set_page_config(page_title="Advanced Medical App", layout="wide", menu_items={
-        'About': "Made by Nath"  # This replaces the default About text
-    })
+st.set_page_config(page_title="Crux Med", layout="wide")
 
-# ------------------- Hide Streamlit Branding -------------------
-# Hide "Made with Streamlit" in About
-
-# ---- Make About popup dark ----
-# Hide About completely
-hide_about = """
+# ------------------- Hide Hamburger Menu -------------------
+hide_hamburger_css = """
 <style>
-#MainMenu div:nth-child(3) {display: none;}
+/* Hide the top-right hamburger menu */
+#MainMenu {visibility: hidden;}
 </style>
 """
-st.markdown(hide_about, unsafe_allow_html=True)
-
+st.markdown(hide_hamburger_css, unsafe_allow_html=True)
 
 # ------------------ LOAD DATA ------------------
 # Load NLEM 2022 drugs
@@ -36,22 +31,29 @@ app_mode = st.sidebar.radio("Go to", ["Home", "Calculator", "Drug Assistant", "N
 
 # ------------------ HOME PAGE ------------------
 if app_mode == "Home":
-    st.title("🏥 Welcome to the Medical Suite")
+    st.title("🏥 Welcome to the complete Medical Suite")
     st.markdown("""
     This app is designed for doctors, medical students, and healthcare professionals.  
     Use the sidebar to navigate to:
-    - **Calculator:** Access medical calculators by specialty  
-    - **Drug Assistant:** Search interactions, dosages, side effects  
-    - **Indian Protocols:** View evidence-based clinical protocols
+    - **Calculator:** Access medical calculators by specialty.
+    - **Drug Assistant:** Search drug interactions.
+    - **Normal Values:** Essential normal values sorted by system.
+    - **Indian Protocols:** Coming Soon.
     
     ---
     🔬 *All tools are built for educational and professional support only.*
-    """)
+        
+        Designed by K.S.Srinath.
+    """
+    )
+    st.markdown("""
+    Want to know more about me? <a href="https://ksnath.com" target="_blank" rel="noopener noreferrer">Visit ksnath.com</a>
+    """, unsafe_allow_html=True)
 
 
 # ------------------ CALCULATORS ------------------
 elif app_mode == "Calculator":
-    st.title("🧮 Medical Calculators")
+    st.title("📟 Medical Calculators")
     #sri
     # Define calculator categories
     calculators_by_category = {
@@ -64,7 +66,8 @@ elif app_mode == "Calculator":
     "Hematology": ["INR", "NLR", "PLR"],
     "Gastroenterology": ["Child-Pugh", "MELD", "APRI"],
     "Critical Care": ["SOFA", "APACHE II", "SIRS"],
-    "Obstetrics": ["Gestational Age", "Bishop Score", "BMI in Pregnancy"]
+    "Obstetrics": ["Gestational Age", "EDC Calculator", "EDC to GA", "Bishop Score", "BMI in Pregnancy"],
+    "Surgery" : ["ABPI"]
 }
 
     # Sidebar selection
@@ -525,10 +528,12 @@ elif app_mode == "Calculator":
 
     # ---------- CRITICAL CARE ----------
     elif selected_calculator == "SOFA":
+        st.info("Coming soon.")
         st.info("SOFA Score requires multiple organ parameters. Add inputs for PaO2/FiO2, Platelets, Bilirubin, MAP, GCS, Creatinine.")
         st.info("You can calculate total score by assigning 0-4 points per organ system.")
 
     elif selected_calculator == "APACHE II":
+        st.info("Coming soon.")
         st.info("APACHE II requires age, vitals, lab values, and chronic health status.")
         st.info("You can sum points to get the APACHE II score.")
 
@@ -554,6 +559,218 @@ elif app_mode == "Calculator":
         days = ga_days % 7
         st.success(f"Estimated Gestational Age: {weeks} weeks and {days} days")
 
+    elif selected_calculator == "EDC Calculator":
+        def days_to_weeks_days(days):
+            weeks = days // 7
+            days_rem = days % 7
+            return weeks, days_rem
+
+        def format_weeks_days(days):
+            w, d = days_to_weeks_days(days)
+            return f"{w} week{'s' if w != 1 else ''} {d} day{'s' if d != 1 else ''}"
+
+        st.title("⚕️ EDC / EDD Calculator")
+        st.caption("Estimate date of delivery and current gestational age. (Designed for clinical use — always confirm clinically.)")
+
+        st.markdown("---")
+        method = st.radio("Choose calculation method:", ["Last Menstrual Period (LMP) — Naegele's rule", 
+                                                        "Conception date (if known)", 
+                                                        "Ultrasound (CRL / Gestational Age)"])
+
+        today = date.today()
+
+        # Common inputs
+        if method == "Last Menstrual Period (LMP) — Naegele's rule":
+            st.write("**Using LMP + cycle length adjustment**")
+            lmp = st.date_input("Date of Last Menstrual Period (LMP)", value=today - timedelta(weeks=12))
+            cycle_len = st.number_input("Average menstrual cycle length (days)", min_value=21, max_value=45, value=28, step=1,
+                                        help="If not 28, EDD is adjusted by (cycle_len - 28) days.")
+            # Calculation: Naegele's rule baseline is LMP + 280 days (40 weeks). Adjust for cycle length.
+            edd = lmp + timedelta(days=280 + (cycle_len - 28))
+            # gestational age from LMP to today
+            gest_days = (today - lmp).days
+            gest_days = max(0, gest_days)
+            gest_weeks_days = format_weeks_days(gest_days)
+            st.markdown("### Result")
+            st.success(f"Estimated Date of Delivery (EDD): **{edd.strftime('%d-%b-%Y')}**")
+            st.info(f"Current gestational age (from LMP): **{gest_weeks_days}** ({gest_days} days)")
+            st.markdown("**Explanation:** Naegele's rule: LMP + 280 days (40 weeks). Adjust by (cycle_len - 28) days if cycle differs from 28 days.")
+
+        elif method == "Conception date (if known)":
+            st.write("**Using conception date**")
+            conc = st.date_input("Conception date", value=today - timedelta(weeks=10))
+            # Typical interval conception -> EDD is ~266 days (38 weeks from conception)
+            edd = conc + timedelta(days=266)
+            gest_days = (today - conc).days + 14  # convention: gestational age counts from LMP ~2 weeks before conception
+            # ensure non-negative
+            if gest_days < 0:
+                gest_days = 0
+            gest_weeks_days = format_weeks_days(gest_days)
+            st.markdown("### Result")
+            st.success(f"Estimated Date of Delivery (EDD): **{edd.strftime('%d-%b-%Y')}**")
+            st.info(f"Current gestational age (approx): **{gest_weeks_days}** ({gest_days} days)")
+            st.markdown("**Explanation:** When conception date is known, EDD ≈ conception + 266 days (~38 weeks). Gestational age is conventionally ~2 weeks more than time since conception (i.e., from LMP).")
+
+        else:  # Ultrasound method
+            st.write("**Using an ultrasound estimate**")
+            us_date = st.date_input("Ultrasound date", value=today - timedelta(weeks=12))
+            ga_weeks = st.number_input("Gestational age on ultrasound — weeks", min_value=0, max_value=45, value=12, step=1)
+            ga_days = st.number_input("Gestational age on ultrasound — extra days", min_value=0, max_value=6, value=0, step=1)
+            # total gestational days at time of ultrasound
+            ga_at_us_days = ga_weeks * 7 + ga_days
+            # EDD = ultrasound_date + (280 - ga_at_us_days) days
+            edd = us_date + timedelta(days=(280 - ga_at_us_days))
+            # current GA = ga_at_us + (today - us_date)
+            ga_today_days = ga_at_us_days + (today - us_date).days
+            if ga_today_days < 0:
+                ga_today_days = 0
+            ga_today = format_weeks_days(ga_today_days)
+            st.markdown("### Result")
+            st.success(f"Estimated Date of Delivery (EDD): **{edd.strftime('%d-%b-%Y')}**")
+            st.info(f"Gestational age today (based on ultrasound): **{ga_today}** ({ga_today_days} days)")
+            st.markdown("**Explanation:** Ultrasound-based dating uses the GA measured on scan. EDD = scan date + (280 days − GA at scan). Ultrasound dating is preferred in the first trimester for accuracy.")
+
+        st.markdown("---")
+        # Additional helpful info block
+        st.markdown("### Quick references")
+        st.write(
+            "- Naegele's rule (LMP): **LMP + 280 days (40 weeks)**. Adjust for cycle length.\n"
+            "- Conception method: **conception + 266 days (~38 weeks from conception)**.\n"
+            "- Ultrasound: preferred when LMP unknown or cycles irregular, especially 1st trimester."
+        )
+
+        # Optional: copy results text for pasting / clinic notes
+        st.markdown("### Copyable summary")
+        if method == "Last Menstrual Period (LMP) — Naegele's rule":
+            if lmp:
+                summary = (f"Method: LMP\nLMP: {lmp.strftime('%d-%b-%Y')}\n"
+                        f"Cycle length: {cycle_len} days\nEDD: {edd.strftime('%d-%b-%Y')}\n"
+                        f"Gestational age today: {gest_weeks_days} ({gest_days} days)")
+                st.code(summary)
+        elif method == "Conception date (if known)":
+            summary = (f"Method: Conception date\nConception: {conc.strftime('%d-%b-%Y')}\n"
+                    f"EDD: {edd.strftime('%d-%b-%Y')}\nGestational age today (approx): {gest_weeks_days} ({gest_days} days)")
+            st.code(summary)
+        else:
+            summary = (f"Method: Ultrasound\nScan date: {us_date.strftime('%d-%b-%Y')}\n"
+                    f"GA at scan: {ga_weeks} weeks + {ga_days} days\nEDD: {edd.strftime('%d-%b-%Y')}\n"
+                    f"GA today (based on scan): {ga_today} ({ga_today_days} days)")
+            st.code(summary)
+
+        st.markdown("---")
+        st.caption("Note: This tool provides estimates. Always corroborate with clinical judgement and local guidelines.")
+
+    elif selected_calculator == "EDC to GA":
+        def days_to_weeks_days(days: int):
+            weeks = days // 7
+            days_rem = days % 7
+            return weeks, days_rem
+
+        def format_weeks_days(days: int):
+            w, d = days_to_weeks_days(days)
+            return f"{w} week{'s' if w != 1 else ''} {d} day{'s' if d != 1 else ''}"
+
+        def trimester_from_ga_days(ga_days: int):
+            # Using conventional cutoffs:
+            # 1st trimester: <14 weeks (0 - 13+6)
+            # 2nd trimester: 14 - 27+6 weeks
+            # 3rd trimester: >=28 weeks
+            weeks = ga_days / 7
+            if weeks < 14:
+                return "1st trimester"
+            elif weeks < 28:
+                return "2nd trimester"
+            else:
+                return "3rd trimester"
+
+        st.title("⚕️ EDC → Gestational Age (GA) Calculator")
+        st.caption("Enter the estimated date of delivery (EDC/EDD) to compute current gestational age and related info.")
+
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            edd = st.date_input("Estimated Date of Delivery (EDC / EDD)", value=date.today() + timedelta(weeks=20))
+            ref_date = st.date_input("Reference date (for GA calculation)", value=date.today(), help="Defaults to today. Change to calculate GA on another date.")
+        with col2:
+            show_progress = st.checkbox("Show GA progress bar (toward 40 weeks)", value=True)
+            show_conception = st.checkbox("Show estimated conception date", value=True)
+            show_summary = st.checkbox("Show copyable summary", value=True)
+
+        # Constants
+        TOTAL_GA_DAYS = 280  # 40 weeks from LMP (Naegele)
+        CONCEPTION_OFFSET_DAYS = 266  # approx. from conception to EDD
+
+        # calculations
+        days_until_edd = (edd - ref_date).days  # positive -> days remaining; negative -> overdue by abs(...)
+        ga_days = TOTAL_GA_DAYS - days_until_edd
+        # allow negative (if reference date well before conception) but clamp for display
+        if ga_days < 0:
+            ga_days_display = 0
+        else:
+            ga_days_display = ga_days
+
+        ga_weeks_days_text = format_weeks_days(ga_days_display)
+        trimester = trimester_from_ga_days(ga_days)
+        conception_date = edd - timedelta(days=CONCEPTION_OFFSET_DAYS)
+
+        # Display results
+        st.markdown("### Result")
+        if days_until_edd > 0:
+            st.success(f"EDD: **{edd.strftime('%d-%b-%Y')}** — {days_until_edd} day(s) remaining")
+        elif days_until_edd == 0:
+            st.warning(f"EDD is today: **{edd.strftime('%d-%b-%Y')}**")
+        else:
+            st.error(f"EDD passed {abs(days_until_edd)} day(s) ago (Overdue). EDD: **{edd.strftime('%d-%b-%Y')}**")
+
+        # Gestational age
+        if ga_days < 0:
+            st.info(f"Estimated GA on {ref_date.strftime('%d-%b-%Y')}: **< 0 days** (before pregnancy dating).")
+        else:
+            st.info(f"Estimated Gestational Age on {ref_date.strftime('%d-%b-%Y')}: **{ga_weeks_days_text}** ({ga_days} days)")
+
+        # Trimester & conception
+        st.write(f"**Trimester:** {trimester}")
+        if show_conception:
+            st.write(f"**Estimated conception date:** {conception_date.strftime('%d-%b-%Y')} (≈ EDD − 266 days)")
+
+        # Progress bar (toward 280 days / 40 weeks)
+        if show_progress:
+            progress_pct = (ga_days / TOTAL_GA_DAYS) if TOTAL_GA_DAYS else 0
+            # cap progress for UI (allow >100 to show overdue)
+            display_pct = max(0.0, min(progress_pct, 1.0))
+            st.write(f"**Progress toward 40 weeks:** {round(progress_pct*100, 1)}%")
+            st.progress(display_pct)
+
+        # Warnings
+        if ga_days >= 294:  # >=42 weeks (294 days)
+            st.warning("⚠️ Post-term (≥42 weeks). Consider clinical assessment.")
+        if ga_days > 280 and ga_days < 294:
+            st.info("Note: Term (>40 weeks) — monitor for labour and follow local guidelines.")
+
+        st.markdown("---")
+
+        # Copyable summary
+        if show_summary:
+            summary_lines = [
+                f"Method: EDC → GA calculator",
+                f"Reference date: {ref_date.strftime('%d-%b-%Y')}",
+                f"EDC (EDD): {edd.strftime('%d-%b-%Y')}",
+            ]
+            if ga_days >= 0:
+                summary_lines.append(f"Gestational age: {ga_weeks_days_text} ({ga_days} days)")
+            else:
+                summary_lines.append(f"Gestational age: <0 days (reference date before pregnancy dating)")
+            summary_lines.append(f"Trimester: {trimester}")
+            summary_lines.append(f"Estimated conception date: {conception_date.strftime('%d-%b-%Y')}")
+            summary_lines.append(f"Days until EDD: {days_until_edd} (positive = remaining; negative = overdue)")
+
+            summary_text = "\n".join(summary_lines)
+            st.code(summary_text)
+
+        st.markdown("---")
+        st.caption("Estimates only — always confirm with clinical judgement and local guidance (ultrasound dating preferred for accuracy).")
+            
     elif selected_calculator == "Bishop Score":
         dilation = st.number_input("Cervical dilation (cm)", min_value=0)
         effacement = st.number_input("Effacement (%)", min_value=0, max_value=100)
@@ -576,6 +793,92 @@ elif app_mode == "Calculator":
             elif bmi<30: st.warning("Overweight")
             else: st.error("Obese")
 
+# ------- SURGERY --------- #
+    elif selected_calculator == "ABPI":
+        st.title("Ankle-Brachial Pressure Index (ABPI) Calculator")
+
+        st.markdown("""
+        The **ABPI** is calculated by dividing the **highest ankle systolic pressure** 
+        by the **highest brachial systolic pressure**.  
+        It helps in screening for **Peripheral Arterial Disease (PAD)**.
+        """)
+
+        # -----------------------------
+        # Inputs
+        # -----------------------------
+        st.subheader("Enter Systolic Blood Pressures (mmHg)")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            brachial_right = st.number_input("Right Brachial Pressure", min_value=0.0, step=1.0)
+            brachial_left = st.number_input("Left Brachial Pressure", min_value=0.0, step=1.0)
+
+        with col2:
+            ankle_right = st.number_input("Right Ankle Pressure", min_value=0.0, step=1.0)
+            ankle_left = st.number_input("Left Ankle Pressure", min_value=0.0, step=1.0)
+
+        # -----------------------------
+        # Calculation
+        # -----------------------------
+        if st.button("Calculate ABPI"):
+            highest_brachial = max(brachial_right, brachial_left)
+
+            if highest_brachial == 0:
+                st.error("⚠️ Brachial pressure cannot be 0.")
+            else:
+                abpi_right = ankle_right / highest_brachial if ankle_right > 0 else None
+                abpi_left = ankle_left / highest_brachial if ankle_left > 0 else None
+
+                st.subheader("📊 Results")
+
+                # Bailey & Love Interpretation
+                def interpret_abpi(value):
+                    if value is None:
+                        return "Not calculated", "#d3d3d3"
+                    elif value > 1.3:
+                        return "Arterial calcification / non-compressible vessels", "#ff8000"
+                    elif 0.91 <= value <= 1.3:
+                        return "Normal", "#4CAF50"
+                    elif 0.80 <= value < 0.91:
+                        return "Mild PAD", "#FFD700"
+                    elif 0.50 <= value < 0.80:
+                        return "Moderate PAD", "#FF4500"
+                    else:  # < 0.50
+                        return "Severe PAD", "#FF0000"
+
+                # Helper to render card
+                def result_card(side, value):
+                    interpretation, color = interpret_abpi(value)
+                    if value is not None:
+                        st.markdown(
+                            f"""
+                            <div style="padding:15px; border-radius:10px; margin-bottom:15px;
+                                        background-color:{color}; color:white; font-size:18px;">
+                                <b>{side} ABPI:</b> {value:.2f} <br>
+                                <b>Interpretation:</b> {interpretation}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+                result_card("Right Leg", abpi_right)
+                result_card("Left Leg", abpi_left)
+
+        # -----------------------------
+        # Reference Table (Bailey & Love)
+        # -----------------------------
+        st.subheader("📖 ABPI Reference Table ")
+
+        st.markdown("""
+        | **ABPI Value**     | **Interpretation**                                |
+        |---------------------|--------------------------------------------------|
+        | > 1.3              | Arterial calcification / non-compressible vessels |
+        | 0.91 – 1.30        | Normal                                           |
+        | 0.80 – 0.90        | Mild PAD                                         |
+        | 0.50 – 0.79        | Moderate PAD                                     |
+        | < 0.50             | Severe PAD                                       |
+        """)
 
     # ---------- Add more calculators as needed following same pattern ----------
     else:
@@ -610,23 +913,44 @@ elif app_mode == "Calculator":
 #             st.success("✅ No major interactions found.")
 
 elif app_mode == "Drug Assistant":
+    import json
+    from itertools import combinations
+
     # -----------------------------
     # Load JSON
     # -----------------------------
     with open("filtered_ddi.json", "r") as f:
         ddi_data = json.load(f)
 
-    # Build list of all drugs
-    nlem_drugs = list(ddi_data.keys())
-    for interactions in ddi_data.values():
-        for drug in interactions.keys():
-            if drug not in nlem_drugs:
-                nlem_drugs.append(drug)
-    nlem_drugs = sorted(nlem_drugs)
+    # Normalize drug names
+    def normalize(name):
+        return name.strip().lower()
+
+    # Build symmetric normalized interaction map
+    normalized_ddi = {}
+    for d1, interactions in ddi_data.items():
+        d1_norm = normalize(d1)
+        if d1_norm not in normalized_ddi:
+            normalized_ddi[d1_norm] = {}
+
+        for d2, interaction in interactions.items():
+            d2_norm = normalize(d2)
+
+            # Ensure both directions exist
+            if d1_norm not in normalized_ddi:
+                normalized_ddi[d1_norm] = {}
+            if d2_norm not in normalized_ddi:
+                normalized_ddi[d2_norm] = {}
+
+            normalized_ddi[d1_norm][d2_norm] = interaction
+            normalized_ddi[d2_norm][d1_norm] = interaction  # 🔄 reverse mapping
+
+    # Build master drug list
+    nlem_drugs = sorted(set(normalized_ddi.keys()))
 
     # Helper to get interaction
     def get_interaction(d1, d2):
-        return ddi_data.get(d1, {}).get(d2) or ddi_data.get(d2, {}).get(d1)
+        return normalized_ddi.get(normalize(d1), {}).get(normalize(d2))
 
     # -----------------------------
     # Streamlit App
@@ -634,19 +958,29 @@ elif app_mode == "Drug Assistant":
     st.title("💊 Drug Assistant")
     st.subheader("Drug Interaction Checker")
 
-    # Initialize session state
+    # ---------------- Help / How to Use ----------------
+    with st.expander("ℹ️ How to Use"):
+        st.markdown("""
+        1. **Search** for a drug using the search bar.  
+        2. **Add** it to your list with ➕.  
+        3. Repeat to add multiple drugs.  
+        4. The app will **automatically check interactions** between all selected drugs.  
+        5. Use 🧹 **Clear All Drugs** to start over.
+        """)
+
     if "selected_drugs" not in st.session_state:
         st.session_state.selected_drugs = []
 
-    # ---------------- Search like calculator ----------------
+    # ---------------- Search ----------------
     search_query = st.text_input("🔍 Search Drug", "")
 
     if search_query:
-        matching_drugs = [drug for drug in nlem_drugs if search_query.lower() in drug.lower()]
+        query_norm = normalize(search_query)
+        matching_drugs = [drug for drug in nlem_drugs if query_norm in drug]
         if matching_drugs:
             selected_drug = st.selectbox("Matching Drugs", matching_drugs, key="drug_select")
             if st.button("➕ Add Drug"):
-                if selected_drug not in st.session_state.selected_drugs:
+                if normalize(selected_drug) not in [normalize(d) for d in st.session_state.selected_drugs]:
                     st.session_state.selected_drugs.append(selected_drug)
         else:
             st.info("No matching drugs found.")
@@ -678,13 +1012,13 @@ elif app_mode == "Drug Assistant":
                     st.error(f"❌ {d1} + {d2} → Serious / Contraindicated: {desc}")
                 else:
                     st.info(f"{d1} + {d2} → {severity.capitalize()}: {desc}")
-
                 found = True
             else:
                 st.info(f"ℹ️ {d1} + {d2} → No interaction data available.")
 
         if not found:
             st.success("✅ No major interactions found.")
+
         
 #filtered_ddi.json is being used.
 
@@ -697,7 +1031,6 @@ elif app_mode == "Drug Assistant":
 # -------------------------
 # Normal Values Page
 # -------------------------
-
 elif app_mode == "Normal Values":
     st.title("📊 Normal Values")
 
@@ -732,3 +1065,18 @@ elif app_mode == "Normal Values":
 elif app_mode == "Indian Protocols":
     st.title("📋 Indian Protocols")
     st.info("Coming soon: Indian medical treatment protocols and clinical pathways.")
+
+st.markdown("---")
+
+st.markdown(
+    """
+    <div style='text-align: center; color: #888888; font-size: 12px; line-height: 1.4;'>
+    ⚠️ <b>Disclaimer:</b> This app is intended for educational and informational purposes only.  
+    It is <i>not</i> a substitute for professional medical advice, diagnosis, or treatment.  
+    Always consult a qualified healthcare provider for clinical decisions.
+    <br><br>
+    © 2025 <b>ksnath.com</b>. All rights reserved.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
