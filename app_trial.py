@@ -10,24 +10,18 @@ import uuid
 st.set_page_config(page_title="Crux Med", layout="wide")
 
 # ---------------------------
-# 2️⃣ Inject favicon and PWA manifest
+# Inject favicon, manifest, and service worker
 # ---------------------------
+
+# Load favicon & manifest
 st.markdown("""
-<!-- Browser favicon -->
 <link rel="icon" href="static/favicon.ico" type="image/x-icon">
-
-<!-- PWA manifest -->
 <link rel="manifest" href="manifest.json">
-
-<!-- Service worker registration -->
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js')
-    .then(() => console.log("✅ Service Worker registered"))
-    .catch((err) => console.log("❌ Service Worker registration failed:", err));
-}
-</script>
 """, unsafe_allow_html=True)
+
+# Inject install button
+with open("pwa_install.html", "r") as f:
+    st.markdown(f.read(), unsafe_allow_html=True)
 
 # -----------------------------
 # Database setup
