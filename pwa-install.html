@@ -1,12 +1,12 @@
+<!-- PWA Install Button + Fallback -->
 <script>
 let deferredPrompt;
 
-// Capture the install event
+// Dynamic PWA install
 window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();  // Prevent automatic prompt
+    e.preventDefault();
     deferredPrompt = e;
 
-    // Add a button dynamically
     const btn = document.createElement('button');
     btn.innerText = '📲 Install MedSuite';
     btn.style.position = 'fixed';
@@ -19,16 +19,31 @@ window.addEventListener('beforeinstallprompt', (e) => {
     btn.style.borderRadius = '8px';
     btn.style.cursor = 'pointer';
     btn.style.zIndex = 9999;
-
     document.body.appendChild(btn);
 
     btn.addEventListener('click', async () => {
         if (!deferredPrompt) return;
-        deferredPrompt.prompt();  // Browser install prompt
+        deferredPrompt.prompt();
         const choice = await deferredPrompt.userChoice;
         console.log('User choice:', choice.outcome);
         deferredPrompt = null;
-        btn.style.display = 'none';  // Hide button after install
+        btn.style.display = 'none';
     });
 });
+
+// Fallback for unsupported browsers
+const fallbackBtn = document.createElement('button');
+fallbackBtn.innerText = '📲 Install MedSuite';
+fallbackBtn.style.position = 'fixed';
+fallbackBtn.style.bottom = '20px';
+fallbackBtn.style.right = '20px';
+fallbackBtn.style.padding = '12px 20px';
+fallbackBtn.style.backgroundColor = '#e63946';
+fallbackBtn.style.color = '#fff';
+fallbackBtn.style.border = 'none';
+fallbackBtn.style.borderRadius = '8px';
+fallbackBtn.style.cursor = 'pointer';
+fallbackBtn.style.zIndex = 9999;
+fallbackBtn.onclick = () => alert('To install: On Android/Windows Chrome → click ⋮ → Add to Home Screen. On iOS Safari → Share → Add to Home Screen.');
+document.body.appendChild(fallbackBtn);
 </script>

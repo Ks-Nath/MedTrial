@@ -7,7 +7,7 @@ import sqlite3
 import uuid
 
 # ------------------ APP CONFIG ------------------
-st.set_page_config(page_title="Crux Med", layout="wide")
+st.set_page_config(page_title="Crux Med",page_icon="static/favicon.ico",layout="wide")
 
 # ---------------------------
 # Inject favicon, manifest, and service worker
@@ -20,7 +20,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Inject install button
-with open("pwa_install.html", "r") as f:
+with open("pwa-install.html", "r") as f:
     st.markdown(f.read(), unsafe_allow_html=True)
 
 # -----------------------------
